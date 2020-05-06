@@ -1,0 +1,20 @@
+{
+    "name": "vanderbilt/mychartlookup",
+    "description": "Allow users to check if a patient has a MyChart account in Epic. Map the results to fields of a REDCap project.",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Francesco Delacqua",
+            "email": "francesco.delacqua@vumc.org"
+        }
+    ],
+    "require": {
+        "guzzlehttp/guzzle": "^6.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "Vanderbilt\\MyChartLookup\\App\\": "app/",
+            "Vanderbilt\\MyChartLookup\\API\\": "api/"
+        }
+    }
+}
