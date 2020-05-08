@@ -9,6 +9,7 @@
             "institution": "Vanderbilt University Medical Center"
         }
     ],
+    "framework-version": 4,
     "permissions": [
         "redcap_control_center",
         "redcap_every_page_before_render",
@@ -52,7 +53,7 @@
         ],
         "project": [
             {
-                "name": "VoteCap",
+                "name": "Lookup MyChart Account",
                 "icon": "fas fa-user-friends",
                 "url": "test.php",
                 "show-header-and-footer": true
@@ -79,8 +80,14 @@
             "type": "event-list"
         },
         {
-            "key": "mrn-mapping-field",
-            "name": "MRN",
+            "key": "has-mychart-field",
+            "name": "Has MyChart field",
+            "required": true,
+            "type": "field-list"
+        },
+        {
+            "key": "mrn-field",
+            "name": "MRN field",
             "required": true,
             "type": "field-list"
         }

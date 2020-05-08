@@ -1,7 +1,8 @@
 <?php
 namespace Vanderbilt\MyChartLookup\App;
 // load composer dependencies
-require_once dirname(dirname(__FILE__))."/vendor/autoload.php";
+$autoload = dirname(dirname(__FILE__))."/vendor/autoload.php";
+require_once ($autoload);
 
 // Disable REDCap's authentication
 define("NOAUTH", true);

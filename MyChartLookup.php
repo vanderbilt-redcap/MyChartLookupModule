@@ -2,13 +2,33 @@
 // Set the namespace defined in your config file
 namespace Vanderbilt\MyChartLookup;
 
-// Declare your module class, which must extend AbstractExternalModule 
+$autoload = join([__DIR__,'vendor','autoload.php'],DIRECTORY_SEPARATOR);
+if(file_exists($autoload)) require_once($autoload);
+
+use Aws\Api\Serializer\QueryParamBuilder;
+use Vanderbilt\MyChartLookup\App\Proxy\DynamicDataPullProxy;
+
 class MyChartLookup extends \ExternalModules\AbstractExternalModule {
 
     /* public function __construct()
     {
         parent::__construct();
     } */
+
+    public function getBaseUrl()
+    {
+        global $project_id;
+        // https://redcap.test/redcap_v999.0.0/ExternalModules/?prefix=lookup_patient_and_mychart_account&page=test&pid=18
+        if(!defined('APP_URL_EXTMOD')) throw new \Exception("Cannot compute the base URL: APP_URL_EXTMOD is not defined. ", 1);
+        $base_url = APP_URL_EXTMOD;
+        $query_params = array(
+            'prefix' => $this->PREFIX,
+        );
+        if($project_id) $query_params['pid'] = $project_id;
+        $query = http_build_query($query_params);
+        $base_url .= "?{$query}";
+        return $base_url;
+    }
 
     /**
      * print text in html format
@@ -30,12 +50,24 @@ class MyChartLookup extends \ExternalModules\AbstractExternalModule {
     
     /**
      * REDCAP_EVERY_PAGE_BEFORE_RENDER
+     * intercept the DDP instance before fetching data
+     * and replace it with a proxy that injects
+     * data from the LookupPatientAndMyChartAccount
      *
      * @return void
      */
-    /* function redcap_every_page_before_render($project_id=null)  {
-        $this->debugPrint('redcap_every_page_before_render');
-    } */
+    function redcap_every_page_before_render($project_id=null)  {
+        global $DDP, $project_id, $realtime_webservice_type;
+        // $this->debugPrint('redcap_every_page_before_render');
+        $mrn_field = $this->getProjectSetting('mrn-field', $project_id);
+        $has_mychart_field = $this->getProjectSetting('mychart-field', $project_id);
+        $test = $realtime_webservice_type;
+        $page = PAGE ?: false;
+        if($page=='DynamicDataPull/fetch.php') {
+            $ddp_proxy = new DynamicDataPullProxy($project_id, $realtime_webservice_type);
+            $DDP = $ddp_proxy;
+        }
+    }
     
     /**
      * REDCAP_EVERY_PAGE_TOP
