@@ -15,6 +15,11 @@ class MyChartLookup extends \ExternalModules\AbstractExternalModule {
         parent::__construct();
     } */
 
+    /**
+     * get base URL for the API endpoint of the module
+     *
+     * @return void
+     */
     public function getBaseUrl()
     {
         global $project_id;
@@ -58,14 +63,19 @@ class MyChartLookup extends \ExternalModules\AbstractExternalModule {
      */
     function redcap_every_page_before_render($project_id=null)  {
         global $DDP, $project_id, $realtime_webservice_type;
-        // $this->debugPrint('redcap_every_page_before_render');
-        $mrn_field = $this->getProjectSetting('mrn-field', $project_id);
-        $has_mychart_field = $this->getProjectSetting('mychart-field', $project_id);
-        $test = $realtime_webservice_type;
-        $page = PAGE ?: false;
-        if($page=='DynamicDataPull/fetch.php') {
-            $ddp_proxy = new DynamicDataPullProxy($project_id, $realtime_webservice_type);
-            $DDP = $ddp_proxy;
+        try {
+            $page = PAGE ?: false;
+            if($page=='DynamicDataPull/fetch.php') {
+                // check if we are using a FHIR enabled project
+                if($realtime_webservice_type != "FHIR") throw new \Exception("This service is only available for FHIR endpoints", 1); // exit if not FHIR
+                // use a proxy to intercept the MRN and run custom code. also pass a reference to the module
+                $ddp_proxy = new DynamicDataPullProxy($project_id, $realtime_webservice_type, $module=$this);
+                $DDP = $ddp_proxy;
+            }
+        } catch (\Exception $e) {
+            $message = $e->getMessage();
+            $code = $e->getCode();
+            \Logging::logEvent( "", "mychart_lookup", "OTHER", $display=null, $code, $message );
         }
     }
     

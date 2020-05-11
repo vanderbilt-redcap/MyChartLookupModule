@@ -7,15 +7,18 @@ $HtmlPage = new \HtmlPage();
 	<h3 class="title">Lookup Patient And MyChart Account</h3>
 
 	<div x-data="MyChartApp()">
-		<form action="" method="POST" @submit.prevent="onSubmit()">
-			<input x-ref="mrn" style="width: 300px" type="text" name="mrn" placeholder="enter a medical record number (i.e. 202500)" value="<?php print($mrn) ?>">
-			<button type="submit">Check</button>
+		<form id="mychart-form" class="form-inline" action="" method="POST" @submit.prevent="onSubmit()">
+			<input class="form-control" x-model="mrn" type="text" name="mrn" placeholder="enter a medical record number (i.e. 202500)" value="<?php print($mrn) ?>">
+			<button class="btn btn-primary ml-2" type="submit" :disabled="mrn.trim()==''">Check</button>
 		</form>
-		<pre  x-ref="results"></pre>
+		<pre  id="results" x-html="response_html" class="mt-2"></pre>
 	</div>
 <style>
 .title {
 	color:#800000;
+}
+#mychart-form input[name="mrn"] {
+	width: 300px;
 }
 #results {
 	min-height: 300px;
@@ -54,15 +57,25 @@ function MyChartApp() {
 		return api_client.post(url, params)
 	}
 
+	
 	return {
+		mrn: '',
+		response_html: '',
+		setResponseHtml(html) {
+			this.response_html = html
+		},
 		onSubmit() {
-			var mrn_field = this.$refs.mrn
-			var results_element = this.$refs.results
-			var mrn = mrn_field.value
+			var mrn = this.mrn
+			if(mrn.trim()=='') return
 			var promise = LookupPatientAndMyChartAccount(mrn)
+			var self = this // reference to self
+			self.setResponseHtml('loading...') // reset results
 			promise.then(function(response) {
 				var data = response.data
-				results_element.innerHTML = JSON.stringify(data)
+				self.setResponseHtml(JSON.stringify(data, null, '\t'))
+			}).catch(function(error) {
+				var message = error.message || "error processing the request"
+				self.setResponseHtml(message)
 			})
 		},
 	}
