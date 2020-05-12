@@ -177,5 +177,6 @@ namespace Vanderbilt\MyChartLookup\App\Proxy
             );
             return $redcap_field;
         }
+
     }
 }
