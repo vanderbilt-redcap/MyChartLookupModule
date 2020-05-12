@@ -1,12 +1,17 @@
 <?php
 namespace Vanderbilt\MyChartLookup\App\Proxy
 {
-
-    use Vanderbilt\MyChartLookup\MyChartLookup;
     use Vanderbilt\MyChartLookup\App\Endpoints\LookupPatientAndMyChartAccountEndpoint;
 
     class DynamicDataPullProxy extends \DynamicDataPull
     {
+
+        /**
+         * key of the resource as is returned from the FHIR endpoint
+         *
+         * @var string
+         */
+        private static $mychart_lookup_key = 'IsPatient';
 
         /**
          * reference to the module
@@ -29,6 +34,8 @@ namespace Vanderbilt\MyChartLookup\App\Proxy
 
         
         /**
+         * override
+         * 
          * fetch data using the parent function then inject data from
          * the LookupPatientMyChartAccount endpoint
          */
@@ -42,40 +49,43 @@ namespace Vanderbilt\MyChartLookup\App\Proxy
             $medical_record_number = $function_arguments[2] ?: false; // get MRN from arguments
             $record_id = $function_arguments[0] ?: false; // get record ID from arguments
 
+            // override the response array
             if($medical_record_number && $record_id) {
                 // check MyChart endpoint and save data
                 $response = $this->fetchMyChartData($medical_record_number);
                 $data = json_decode($response); //decode the response
-                $is_mychart_patient = $data->IsPatient ?: false;
+                // alter the response array with data from the MyChart endpoint
+                $is_mychart_patient = $data->{self::$mychart_lookup_key} ?: false;
                 $event_id = $this->module->getProjectSetting('event-id', $project_id);
                 $has_mychart_field = $this->module->getProjectSetting('has-mychart-field', $project_id);
                 $redcap_field = $this->getHasMyChartRedCapField($record_id, $event_id, $has_mychart_field, $is_mychart_patient);
                 $response_data_array[] = $redcap_field;
-                // $this->setHasMyChart($record_id, $data);
             }
             
             return array($response_data_array, $field_event_info);
         }
 
-        private function getHasMyChartRedCapField($record_id, $event_id, $field_name, $value)
+        /* public function getFhirData($record_identifier_external, $field_info)
         {
-            $redcap_field = array(
-                'field' => "IsPatient",
-                'timestamp' =>  null,
-                'value' => $value,
-                'md_id' => $record_id,
-                'event_id' => $event_id,
-                'rcfield' => $field_name,
+            $fhir_data = parent::getFhirData($record_identifier_external, $field_info);
+
+            $response = $this->fetchMyChartData($record_identifier_external);
+            $data = json_decode($response); //decode the response
+            $mychart_data = array(
+                'resourceType' => "MyChartLookup",
+                'field' => self::$mychart_lookup_key,
+                'value' => $data->{self::$mychart_lookup_key},
+                'timestamp' => null,
             );
-            return $redcap_field;
-        }
+            $fhir_data->addData(array($mychart_data)); // new data must be added as array
+            return $fhir_data;
+        } */
 
         /**
-         * fetch MyChart data and save the response
-         * in the designed field of the record
+         * save mychart data in the designed field of the record
          *
-         * @param string $medical_record_number
          * @param string $record_id
+         * @param object $data
          * @return array Records::saveData result
          */
         public function setHasMyChart($record_id, $data)
@@ -83,14 +93,12 @@ namespace Vanderbilt\MyChartLookup\App\Proxy
             global $project_id;
             $module = $this->module;
             $event_id = $module->getProjectSetting('event-id', $project_id);
-            $mrn_field = $module->getProjectSetting('mrn-field', $project_id);
             $has_mychart_field = $module->getProjectSetting('has-mychart-field', $project_id);
             // check if settings are correct
             if(empty($event_id)) throw new \Exception("Event ID has not been setup.", 1);
-            if(empty($mrn_field)) throw new \Exception("MRN field has not been setup.", 1); // do I need this? probably not
             if(empty($has_mychart_field)) throw new \Exception("MyChart field has not been setup", 1);
             // Init data array
-            $has_my_chart = boolval($data->IsPatient);
+            $has_my_chart = boolval($data->{self::$mychart_lookup_key});
 			$record_data = array($event_id => array(
                 $has_mychart_field => intval($has_my_chart),
             ));
@@ -116,6 +124,58 @@ namespace Vanderbilt\MyChartLookup\App\Proxy
             return $response;
         }
 
-        
+        /**
+         * override the list of mapped fields that
+         * wil be used to render the adjudication table (renderAdjudicationTable)
+         * and addthe mapping for the MyChartLookup value
+         * 
+         * @return array
+         */
+        public function getMappedFields()
+        {
+            global $project_id;
+            $event_id = $this->module->getProjectSetting('event-id', $project_id);
+            $has_mychart_field = $this->module->getProjectSetting('has-mychart-field', $project_id);
+            // create the mychart mapping
+            $mychart_mapping = array(
+                $event_id => array(
+                    $has_mychart_field => array(
+                        'map_id' => null,
+                        'is_record_identifier' => null,
+                        'temporal_field' => null,
+                        'preselect' => null,
+                    )
+                )
+            );
+            // get the original mappings and add the mychart mapping
+            $mapped_fields = parent::getMappedFields();
+            $mapped_fields[self::$mychart_lookup_key] = $mychart_mapping;
+            return $mapped_fields;
+        }
+
+        /**
+         * get the data structure that must be used in 
+         * the response_array returned by fetchData 
+         * 
+         * @param string $record_id
+         * @param string $event_id
+         * @param string $field_name
+         * @param string $value
+         * @return void
+         */
+        private function getHasMyChartRedCapField($record_id, $event_id, $field_name, $value)
+        {
+            $boolean_value = boolval($value); //convert to boolean
+            $numeric_string = strval(intval($boolean_value)); //convert to '0' or '1'
+            $redcap_field = array(
+                'field' => self::$mychart_lookup_key,
+                'timestamp' =>  null,
+                'value' => $numeric_string,
+                'md_id' => $record_id,
+                'event_id' => $event_id,
+                'rcfield' => $field_name,
+            );
+            return $redcap_field;
+        }
     }
 }

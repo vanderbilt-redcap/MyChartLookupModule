@@ -84,12 +84,6 @@
             "name": "Has MyChart field",
             "required": true,
             "type": "field-list"
-        },
-        {
-            "key": "mrn-field",
-            "name": "MRN field",
-            "required": true,
-            "type": "field-list"
         }
     ]
 }
