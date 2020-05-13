@@ -80,8 +80,8 @@
             "type": "event-list"
         },
         {
-            "key": "has-mychart-field",
-            "name": "Has MyChart field",
+            "key": "mychart-status-field",
+            "name": "MyChart status field",
             "required": true,
             "type": "field-list"
         }

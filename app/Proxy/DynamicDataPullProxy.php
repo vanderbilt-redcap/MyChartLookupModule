@@ -11,7 +11,9 @@ namespace Vanderbilt\MyChartLookup\App\Proxy
          *
          * @var string
          */
-        private static $mychart_lookup_key = 'IsPatient';
+        private static $mychart_lookup_key = 'MyChartStatus';
+
+        const MYCHART_STATUS_FIELD = 'mychart-status-field';
 
         /**
          * reference to the module
@@ -55,10 +57,10 @@ namespace Vanderbilt\MyChartLookup\App\Proxy
                 $response = $this->fetchMyChartData($medical_record_number);
                 $data = json_decode($response); //decode the response
                 // alter the response array with data from the MyChart endpoint
-                $is_mychart_patient = $data->{self::$mychart_lookup_key} ?: false;
+                $mychart_status = $data->{self::$mychart_lookup_key} ?: false;
                 $event_id = $this->module->getProjectSetting('event-id', $project_id);
-                $has_mychart_field = $this->module->getProjectSetting('has-mychart-field', $project_id);
-                $redcap_field = $this->getHasMyChartRedCapField($record_id, $event_id, $has_mychart_field, $is_mychart_patient);
+                $my_chart_status_field = $this->module->getProjectSetting(self::MYCHART_STATUS_FIELD, $project_id);
+                $redcap_field = $this->getMyChartRedCapField($record_id, $event_id, $my_chart_status_field, $mychart_status);
                 $response_data_array[] = $redcap_field;
             }
             
@@ -88,19 +90,19 @@ namespace Vanderbilt\MyChartLookup\App\Proxy
          * @param object $data
          * @return array Records::saveData result
          */
-        public function setHasMyChart($record_id, $data)
+        public function setMyChartStatus($record_id, $data)
         {
             global $project_id;
             $module = $this->module;
             $event_id = $module->getProjectSetting('event-id', $project_id);
-            $has_mychart_field = $module->getProjectSetting('has-mychart-field', $project_id);
+            $my_chart_status_field = $module->getProjectSetting(self::MYCHART_STATUS_FIELD, $project_id);
             // check if settings are correct
             if(empty($event_id)) throw new \Exception("Event ID has not been setup.", 1);
-            if(empty($has_mychart_field)) throw new \Exception("MyChart field has not been setup", 1);
+            if(empty($my_chart_status_field)) throw new \Exception("MyChart field has not been setup", 1);
             // Init data array
-            $has_my_chart = boolval($data->{self::$mychart_lookup_key});
+            $mychart_status = $data->{self::$mychart_lookup_key};
 			$record_data = array($event_id => array(
-                $has_mychart_field => intval($has_my_chart),
+                $my_chart_status_field => $mychart_status,
             ));
             $record = array($record_id=>$record_data);
             $save_response = \Records::saveData($project_id, 'array', $record);
@@ -135,11 +137,11 @@ namespace Vanderbilt\MyChartLookup\App\Proxy
         {
             global $project_id;
             $event_id = $this->module->getProjectSetting('event-id', $project_id);
-            $has_mychart_field = $this->module->getProjectSetting('has-mychart-field', $project_id);
+            $my_chart_status_field = $this->module->getProjectSetting(self::MYCHART_STATUS_FIELD, $project_id);
             // create the mychart mapping
             $mychart_mapping = array(
                 $event_id => array(
-                    $has_mychart_field => array(
+                    $my_chart_status_field => array(
                         'map_id' => null,
                         'is_record_identifier' => null,
                         'temporal_field' => null,
@@ -163,7 +165,7 @@ namespace Vanderbilt\MyChartLookup\App\Proxy
          * @param string $value
          * @return void
          */
-        private function getHasMyChartRedCapField($record_id, $event_id, $field_name, $value)
+        private function getMyChartRedCapField($record_id, $event_id, $field_name, $value)
         {
             $boolean_value = boolval($value); //convert to boolean
             $numeric_string = strval(intval($boolean_value)); //convert to '0' or '1'
