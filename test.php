@@ -7,11 +7,16 @@ $HtmlPage = new \HtmlPage();
 	<h3 class="title">Lookup Patient And MyChart Account</h3>
 
 	<div x-data="MyChartApp()">
-		<form id="mychart-form" class="form-inline" action="" method="POST" @submit.prevent="onSubmit()">
+		<form id="mychart-form" class="form-inline" action="" method="POST" @submit.prevent="onSubmit()" @reset.prevent="onReset()">
 			<input class="form-control" x-model="mrn" type="text" name="mrn" placeholder="enter a medical record number (i.e. 202500)" value="<?php print($mrn) ?>">
-			<button class="btn btn-primary ml-2" type="submit" :disabled="mrn.trim()==''">Check</button>
+			<button class="btn btn-primary ml-2" type="submit" :disabled="loading || mrn.trim()==''">Check</button>
+			<button class="btn btn-info ml-2" type="reset" :disabled="loading || response_html.trim()==''">Reset</button>
 		</form>
-		<pre  id="results" x-html="response_html" class="mt-2"></pre>
+		<div id="results-container" class="mt-2" x-show="loading || response_html">
+			<span x-show="loading">Loading <i class="fas fa-spinner fa-spin"></i></span>
+			<div class="results" x-html="response_html"></div>
+		</div>
+
 	</div>
 <style>
 .title {
@@ -20,9 +25,20 @@ $HtmlPage = new \HtmlPage();
 #mychart-form input[name="mrn"] {
 	width: 300px;
 }
-#results {
-	min-height: 300px;
-	max-width: 600px;
+#results-container{
+	/* min-height: 300px; */
+	max-width: 300px;
+    padding: 9.5px;
+    margin: 0 0 10px;
+    font-size: 13px;
+    color: #333;
+    word-break: break-all;
+    word-wrap: break-word;
+    background-color: #f5f5f5;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+#results-container .results {
 	white-space: pre-wrap;
 }
 </style>
@@ -61,6 +77,7 @@ function MyChartApp() {
 	return {
 		mrn: '',
 		response_html: '',
+		loading: false,
 		setResponseHtml(html) {
 			this.response_html = html
 		},
@@ -69,15 +86,22 @@ function MyChartApp() {
 			if(mrn.trim()=='') return
 			var promise = LookupPatientAndMyChartAccount(mrn)
 			var self = this // reference to self
-			self.setResponseHtml('loading...') // reset results
+			self.loading = true
+			self.setResponseHtml('') // reset results
 			promise.then(function(response) {
 				var data = response.data
 				self.setResponseHtml(JSON.stringify(data, null, '\t'))
 			}).catch(function(error) {
 				var message = error.message || "error processing the request"
 				self.setResponseHtml(message)
+			}).finally(function() {
+				self.loading = false
 			})
 		},
+		onReset() {
+			this.mrn = ''
+			this.response_html = ''
+		}
 	}
 }
 </script>
