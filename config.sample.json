@@ -11,9 +11,46 @@
     ],
     "framework-version": 4,
     "permissions": [
-        "redcap_every_page_before_render"
+        "redcap_control_center",
+        "redcap_every_page_before_render",
+        "redcap_every_page_top",
+        "redcap_data_entry_form",
+        "redcap_data_entry_form_top",
+        "redcap_save_record",
+        "redcap_survey_complete",
+        "redcap_survey_page",
+        "redcap_survey_page_top",
+        "redcap_add_edit_records_page",
+        "redcap_user_rights",
+        "redcap_project_home_page",
+        "redcap_custom_verify_username",
+        "redcap_pdf",
+        "redcap_email",
+        
+        "redcap_add_edit_records_page",
+        "redcap_control_center",
+        "redcap_custom_verify_username",
+        "redcap_data_entry_form",
+        "redcap_data_entry_form_top",
+        "redcap_email",
+        "redcap_every_page_before_render",
+        "redcap_every_page_top",
+        "redcap_pdf",
+        "redcap_project_home_page",
+        "redcap_save_record",
+        "redcap_survey_complete",
+        "redcap_survey_page",
+        "redcap_survey_page_top",
+        "redcap_user_rights"
     ],
     "links": {
+        "control-center": [
+            {
+                "name": "Lookup Patient And MyChart Account",
+                "icon": "fas fa-user-friends",
+                "url": "test.php"
+            }
+        ],
         "project": [
             {
                 "name": "Lookup MyChart Account",

@@ -56,13 +56,6 @@ class MyChartLookup extends \ExternalModules\AbstractExternalModule
         return;
         printf('<p style="color:red;font-weight:bold;">%s</p>', $text);
     }
-
-    /**
-     * REDCAP_CONTROL_CENTER
-     *
-     * @return void
-     */
-    function redcap_control_center() {}
     
     /**
      * REDCAP_EVERY_PAGE_BEFORE_RENDER
