@@ -11,6 +11,7 @@ $routes = [
     // pages
     ['GET', "/test", 'Vanderbilt\MyChartLookup\App\Controllers\EndpointsController/test'],
     ['POST', "/LookupPatientAndMyChartAccount", 'Vanderbilt\MyChartLookup\App\Controllers\EndpointsController/LookupPatientAndMyChartAccount'],
+    ['PUT', "/updateAll", 'Vanderbilt\MyChartLookup\App\Controllers\EndpointsController/updateAll'],
 ];
 
 // create a BaseController to manage common routes or errors

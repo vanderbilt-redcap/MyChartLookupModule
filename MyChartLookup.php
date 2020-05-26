@@ -25,6 +25,7 @@ class MyChartLookup extends \ExternalModules\AbstractExternalModule
      * key of the setting with the mapped field
      */
     const MYCHART_STATUS_FIELD = 'mychart-status-field';
+    const MRN_FIELD = 'mrn-field';
 
     /**
      * get base URL for the API endpoint of the module
@@ -139,6 +140,32 @@ class MyChartLookup extends \ExternalModules\AbstractExternalModule
         $record = array($record_id=>$record_data);
         $save_response = \Records::saveData($project_id, 'array', $record);
         return $save_response;
+    }
+
+    /**
+     * update the status for all records in the project
+     *
+     * @return void
+     */
+    function batchUpdate()
+    {
+        global $project_id, $userid, $fhir_endpoint_base_url, $fhir_client_id;
+
+        $mrn_field_name = $this->getProjectSetting(MyChartLookup::MRN_FIELD, $project_id);
+        $records_data = \Records::getData($project_id, 'array', $records=[],$fields=[$mrn_field_name]);
+
+        $results = [];
+        foreach ($records_data as $record_id => $event) {
+            $record_data = reset($event); // extract data from the first event
+            $mrn = $record_data[$mrn_field_name];
+            $response = $this->fetchMyChartData($mrn);
+            $data = json_decode($response); //decode the response
+            $results[$mrn] = $data;
+            // $record_id = $this->findRecordId($project_id, $mrn);
+            // if(empty($record_id))  throw new \Exception("Cannot save MyChart status: no record ID found", 400);
+            $this->setMyChartStatus($project_id, $record_id, $data);
+        }
+        return $results;
     }
 
     public function findRecordId($project_id, $mrn)

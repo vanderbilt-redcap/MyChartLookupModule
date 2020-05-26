@@ -18,6 +18,13 @@ class EndpointsController extends BaseController
 		$this->printJSON($response);
 	}
 
+	public function updateAll()
+	{
+		global $module;
+		$results = $module->batchUpdate();
+		$this->printJSON($results);
+	}
+
 	public function LookupPatientAndMyChartAccount()
 	{
 		global $fhir_endpoint_base_url, $fhir_client_id, $userid;

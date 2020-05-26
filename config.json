@@ -18,7 +18,7 @@
             {
                 "name": "Lookup MyChart Account",
                 "icon": "fas fa-user-friends",
-                "url": "test.php",
+                "url": "dashboard.php",
                 "show-header-and-footer": true
             }
         ]
@@ -45,6 +45,12 @@
         {
             "key": "mychart-status-field",
             "name": "MyChart status field",
+            "required": true,
+            "type": "field-list"
+        },
+        {
+            "key": "mrn-field",
+            "name": "Medical Record Number field",
             "required": true,
             "type": "field-list"
         }
