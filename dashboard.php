@@ -8,8 +8,6 @@ require_once "app/bootstrap.php";
 
 $HtmlPage = new \HtmlPage();
 
-$module->batchUpdate();
-
 ?>
 <h3 class="title">Lookup Patient And MyChart Account</h3>
 
