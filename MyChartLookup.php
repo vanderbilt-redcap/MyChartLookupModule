@@ -2,6 +2,8 @@
 // Set the namespace defined in your config file
 namespace Vanderbilt\MyChartLookup;
 
+use Vanderbilt\REDCap\Classes\Fhir\TokenManager\FhirTokenManager;
+
 $autoload = join([__DIR__,'vendor','autoload.php'],DIRECTORY_SEPARATOR);
 if(file_exists($autoload)) require_once($autoload);
 
@@ -110,7 +112,7 @@ class MyChartLookup extends \ExternalModules\AbstractExternalModule
     public function fetchMyChartData($medical_record_number)
     {
         global $user_id, $fhir_client_id, $fhir_endpoint_base_url;
-        $token_manager = new \FhirTokenManager($user_id);
+        $token_manager = new FhirTokenManager($user_id);
         $access_token = $token_manager->getAccessToken();
         $lookup_mychart_endpoint = new LookupPatientAndMyChartAccountEndpoint($fhir_endpoint_base_url);
         $response = $lookup_mychart_endpoint->check($access_token, $fhir_client_id, $medical_record_number);
@@ -133,9 +135,8 @@ class MyChartLookup extends \ExternalModules\AbstractExternalModule
         if(empty($my_chart_status_field)) throw new \Exception("MyChart field has not been setup", 1);
         // Init data array
         $mychart_status = $data->{self::MYCHART_STATUS_KEY};
-        $mychart_status_intval = intval(boolval($mychart_status)); // transform to 0 or 1
         $record_data = array($event_id => array(
-            $my_chart_status_field => $mychart_status_intval,
+            $my_chart_status_field => $mychart_status,
         ));
         $record = array($record_id=>$record_data);
         $save_response = \Records::saveData($project_id, 'array', $record);

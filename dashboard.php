@@ -11,6 +11,18 @@ $HtmlPage = new \HtmlPage();
 ?>
 <h3 class="title">Lookup Patient And MyChart Account</h3>
 
+<p>Check the MyChart status for a specific MRN.</p>
+<p>Possible values are:</p>
+<ul>
+	<li><span><strong>0 or empty</strong>: No MyChart account</span></li>
+	<li><span><strong>1</strong>: Activated</span></li>
+	<li><span><strong>2</strong>: Inactivated</span></li>
+	<li><span><strong>3</strong>: Pending Activation</span></li>
+	<li><span><strong>4</strong>: Non Standard MyChart Status</span></li>
+	<li><span><strong>5</strong>: Patient Declined</span></li>
+	<li><span><strong>6</strong>: Activation Code Generated, but Disabled</span></li>
+</ul>
+
 <div x-data="MyChartApp()" class="card">
 	<div class="card-body">
 		<h5 class="card-title">Check the status for a patient</h5>

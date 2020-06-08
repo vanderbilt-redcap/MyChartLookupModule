@@ -2,7 +2,7 @@
 namespace Vanderbilt\MyChartLookup\App\Controllers;
 
 use Vanderbilt\MyChartLookup\App\Endpoints\LookupPatientAndMyChartAccountEndpoint;
-use \FhirTokenManager;
+use Vanderbilt\REDCap\Classes\Fhir\TokenManager\FhirTokenManager;
 
 class EndpointsController extends BaseController
 {
