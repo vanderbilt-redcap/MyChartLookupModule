@@ -32,15 +32,14 @@ class DynamicDataPullProxy extends \DynamicDataPull
      * fetch data using the parent function then inject data from
      * the LookupPatientMyChartAccount endpoint
      */
-    public function fetchData()
+    public function fetchData(...$args)
     {
         global $project_id;
-        $function_arguments = func_get_args();
-        list($response_data_array, $field_event_info) = call_user_func_array(array(__CLASS__, 'parent::fetchData'), $function_arguments);
+        list($response_data_array, $field_event_info) = call_user_func_array(array(__CLASS__, 'parent::fetchData'), $args);
         if(!is_array($response_data_array)) return false;
 
-        $medical_record_number = $function_arguments[2] ?: false; // get MRN from arguments
-        $record_id = $function_arguments[0] ?: false; // get record ID from arguments
+        $medical_record_number = $args[2] ?: false; // get MRN from arguments
+        $record_id = $args[0] ?: false; // get record ID from arguments
 
         // override the response array
         if($medical_record_number && $record_id) {
